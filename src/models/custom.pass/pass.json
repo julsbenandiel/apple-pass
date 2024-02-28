@@ -1,0 +1,74 @@
+{
+  "passTypeIdentifier" : "pass.com.proxa.nwd-rsvp-uat",
+  "formatVersion" : 1,
+  "teamIdentifier" : "7LUX9C2N33",
+  "organizationName" : "Passbook Example Proxa LTD",
+  "serialNumber" : "0000001",
+  "description" : "rsvp test description",
+  "associatedStoreIdentifiers" : [
+  	 284971959
+  ],
+  "foregroundColor" : "rgb(255, 255, 255)",
+  "backgroundColor" : "rgb(0, 0, 0)",
+  "labelColor" : "rgb(255, 255, 255)",
+  "logoText" : "Event Name test",
+  "barcode" : {
+  		"format" : "PKBarcodeFormatQR",
+  		"message" : "0000001",
+  		"messageEncoding" : "iso-8859-1",
+  		"altText" : "Invitation test alt text"
+   },
+  "generic" : {
+  	"headerFields" : [
+  		{
+  			"key" : "staffNumber",
+        	"label" : "Staff Number",
+        	"value" : "001"
+  		}
+  	],
+    "primaryFields" : [
+      {
+        "key" : "staffName",
+        "label" : "Name",
+        "value" : "Juls"
+      }
+    ],
+    "secondaryFields" : [
+      {
+        "key" : "telephoneExt",
+        "label" : "Extension",
+        "value" : "9779"
+      },
+      {
+        "key" : "jobTitle",
+        "label" : "Job Title",
+        "value" : "Chief Pass Creator"
+      },
+      {
+        "key" : "drink",
+        "label" : "Favorite Drink",
+        "value" : "Coffee"
+      }
+    ],
+    "auxiliaryFields" : [
+      {
+        "key" : "expiryDate",
+        "dateStyle" : "PKDateStyleShort",
+        "label" : "Expiry Date",
+        "value" : "2013-12-31T00:00-23:59"
+      }
+    ],
+    "backFields" : [
+      {
+        "key" : "managersName",
+        "label" : "Manager's Name",
+        "value" : "Paul Bailey"
+      },
+      {
+        "key" : "managersExt",
+        "label" : "Manager's Extension",
+        "value" : "9673"
+      }
+    ]
+  }
+}

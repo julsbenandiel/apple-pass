@@ -11,6 +11,9 @@ function getFile(name: string) {
 
 const app: Express = express()
 
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
 PKPass.from(
   {
     model: path.join(__dirname, '/models/custom.pass'),
@@ -22,10 +25,13 @@ PKPass.from(
     }
   },
   {
-    
+    authenticationToken: "KqnYPAnysRXyk8VygxHkTlksSiw7oOv3jUS0hVXI3lM1KXdkP82rjXbhQ+0d/AsO",
+    webServiceURL: 'https://e9c8-112-207-177-72.ngrok-free.app',
+    serialNumber: 'proxa-pass-123',
+    description: 'test description pass',
+    logoText: 'from pkpass config',
   }
 ).then(async (newPass) => {
-  // configs
   newPass.setBarcodes({
     format: 'PKBarcodeFormatQR',
     message: 'https://rsvp-fe-alpha.vercel.app/',
@@ -42,7 +48,19 @@ PKPass.from(
 })
 
 app.get('/', (req: Request, res: Response) =>  {
-  res.status(200).json({ success: "true" })
+  res.status(200).json({ success: "true", hello: "world" })
+})
+
+app.post('/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier/:serialNumber', async (req, res) => {
+  const data = {
+    params: req.params,
+    body: req.body,
+    headers: req.headers
+  }
+
+  console.log(data)
+
+  res.status(200).json(data)
 })
 
 app.listen(8080, () => {

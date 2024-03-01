@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express'
 import { PKPass } from 'passkit-generator'
 import fs from 'node:fs'
 import path from 'node:path'  
+import apn from 'apn'
 
 
 function getFile(name: string) {
@@ -14,44 +15,60 @@ const app: Express = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-PKPass.from(
-  {
-    model: path.join(__dirname, '/models/custom.pass'),
-    certificates: {
-      wwdr: getFile('wwdr.pem'),
-      signerCert: getFile('signerCert.pem'),
-      signerKey: getFile('signerKey.pem'),
-      signerKeyPassphrase: "admin123"
-    }
+const apn_options = {
+  token: {
+    key: getFile("AuthKey_97L3249J4V.p8"),
+    keyId: "97L3249J4V",
+    teamId: "7LUX9C2N33"
   },
-  {
-    authenticationToken: "KqnYPAnysRXyk8VygxHkTlksSiw7oOv3jUS0hVXI3lM1KXdkP82rjXbhQ+0d/AsO",
-    webServiceURL: 'https://e9c8-112-207-177-72.ngrok-free.app',
-    serialNumber: 'proxa-pass-123',
-    description: 'test description pass',
-    logoText: 'from pkpass config',
+  production: false
+};
+
+const pass_params = {
+  model: path.join(__dirname, '/models/custom.pass'),
+  certificates: {
+    wwdr: getFile('wwdr.pem'),
+    signerCert: getFile('signerCert.pem'),
+    signerKey: getFile('signerKey.pem'),
+    signerKeyPassphrase: "admin123"
   }
-).then(async (newPass) => {
-  newPass.setBarcodes({
-    format: 'PKBarcodeFormatQR',
-    message: 'https://rsvp-fe-alpha.vercel.app/',
-    altText: 'rsvp link',
-  })
+}
 
-  const name = `${Date.now()}.pkpass`
-  const dir = path.join(__dirname, `../passes/${name}`)
-  const buffer = newPass.getAsBuffer()
+const pass_opts = {
+  authenticationToken: "KqnYPAnysRXyk8VygxHkTlksSiw7oOv3jUS0hVXI3lM1KXdkP82rjXbhQ+0d/AsO",
+  webServiceURL: 'https://12ea-112-207-177-72.ngrok-free.app',
+  serialNumber: 'proxa-pass-123',
+  description: 'test description pass',
+  logoText: 'LOGO TEXT NEW!',
+}
 
-  fs.writeFile(dir, buffer, (error) => {
-    console.log({error})
-  })
-})
+const apnProvider = new apn.Provider(apn_options);
+
+let deviceToken = "71dafd900bb220994ec0a4fd8c74b98ddd8774e916bce2289856f66806d442fb"
+var note = new apn.Notification();
+
+note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
+note.badge = 3;
+note.sound = "ping.aiff";
+note.alert = "\uD83D\uDCE7 \u2709 You have a new message";
+note.payload = {'messageFrom': 'John Appleseed'};
+note.topic = "<your-app-bundle-id>";
+
+apnProvider.send(note, deviceToken).then( (result) => {
+  console.log({ result })
+  if (result.failed) {
+    console.log('failed:', result.failed)
+  }
+  // see documentation for an explanation of result
+});
 
 app.get('/', (req: Request, res: Response) =>  {
+  console.log('ROOT')
   res.status(200).json({ success: "true", hello: "world" })
 })
 
 app.post('/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier/:serialNumber', async (req, res) => {
+  console.log('Register a Pass for Update Notifications')
   const data = {
     params: req.params,
     body: req.body,
@@ -60,9 +77,44 @@ app.post('/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier
 
   console.log(data)
 
-  res.status(200).json(data)
+  res.status(201).json(data)
 })
 
-app.listen(8080, () => {
+app.get('/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier', async (req, res) => {
+  console.log('Get the List of Updatable Passes')
+  const data = {
+    params: req.params,
+    query: req.query,
+    headers: req.headers
+  }
+
+  console.log(data)
+
+  res.status(200).json(pass_opts)
+})
+
+app.get('/v1/passes/:passTypeIdentifier/:serialNumber', async (req, res) => {
+  console.log('Send an Updated Pass')
+  PKPass.from(pass_params, pass_opts).then(async (newPass) => {
+    newPass.setBarcodes({
+      format: 'PKBarcodeFormatQR',
+      message: 'https://rsvp-fe-alpha.vercel.app',
+      altText: 'rsvp link',
+    })
+
+    const name = `${Date.now()}.pkpass`
+    const dir = path.join(__dirname, `../passes/${name}`)
+    const buffer = newPass.getAsBuffer()
+
+    fs.writeFile(dir, buffer, (error) => {
+      console.log({error})
+    })
+    
+    res.setHeader('Content-Type', 'application/vnd.apple.pkpass')
+    return res.status(200).end(buffer)
+  })
+})
+
+app.listen(8081, () => {
   console.log('server running')
 })

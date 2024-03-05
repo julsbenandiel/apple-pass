@@ -35,16 +35,17 @@ const pass_params = {
 }
 
 const pass_opts = {
-  authenticationToken: "KqnYPAnysRXyk8VygxHkTlksSiw7oOv3jUS0hVXI3lM1KXdkP82rjXbhQ+0d/AsO",
+  authenticationToken: "UPDATE_TOKEN",
   webServiceURL: 'https://12ea-112-207-177-72.ngrok-free.app',
-  serialNumber: 'proxa-pass-123',
+  serialNumber: 'apple-pass-123',
   description: 'test description pass',
   logoText: 'LOGO TEXT NEW!',
 }
 
 const apnProvider = new apn.Provider(apn_options);
 
-let deviceToken = "71dafd900bb220994ec0a4fd8c74b98ddd8774e916bce2289856f66806d442fb"
+// test notification
+let deviceToken = "DEVICE TOKEN"
 var note = new apn.Notification();
 
 note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
@@ -59,11 +60,9 @@ apnProvider.send(note, deviceToken).then( (result) => {
   if (result.failed) {
     console.log('failed:', result.failed)
   }
-  // see documentation for an explanation of result
 });
 
 app.get('/', (req: Request, res: Response) =>  {
-  console.log('ROOT')
   res.status(200).json({ success: "true", hello: "world" })
 })
 
@@ -74,8 +73,6 @@ app.post('/v1/devices/:deviceLibraryIdentifier/registrations/:passTypeIdentifier
     body: req.body,
     headers: req.headers
   }
-
-  console.log(data)
 
   res.status(201).json(data)
 })
@@ -98,8 +95,8 @@ app.get('/v1/passes/:passTypeIdentifier/:serialNumber', async (req, res) => {
   PKPass.from(pass_params, pass_opts).then(async (newPass) => {
     newPass.setBarcodes({
       format: 'PKBarcodeFormatQR',
-      message: 'https://rsvp-fe-alpha.vercel.app',
-      altText: 'rsvp link',
+      message: 'http://google.com',
+      altText: 'google link test',
     })
 
     const name = `${Date.now()}.pkpass`
